@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.IO;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -82,7 +83,7 @@
 
             try
             {
-                string content = System.IO.File.ReadAllText(item.FileName);
+                string content = TextUtility.readToUTF(item.FileName);
                 string result = Converter.Convert(content, configFileName);
                 string outputPath;
                 if (outputFolder == null)
@@ -123,12 +124,90 @@
         {
             try
             {
-                textBox.Text = System.IO.File.ReadAllText(fileName);
+                textBox.Text = readToUTF(fileName);
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message);
             }
+        }
+
+        public static string readToUTF(string fileName)
+        {
+            string charset = "";
+            string result = "";
+
+            using (FileStream fs = File.OpenRead(fileName))
+            {
+                Ude.CharsetDetector cdet = new Ude.CharsetDetector();
+                cdet.Feed(fs);
+                cdet.DataEnd();
+                if (cdet.Charset != null)
+                {
+                    Console.WriteLine("Charset: {0}, confidence: {1}",
+                         cdet.Charset, cdet.Confidence);
+
+                    charset = cdet.Charset;
+                }
+                else
+                {
+                    Console.WriteLine("Detection failed.");
+                }
+            }
+
+            if (charset == "Big5")
+            {
+                result = readBig5(fileName);
+            }
+            if (charset == "gb18030")
+            {
+                result = readGB(fileName);
+            }
+            return result;
+        }
+
+        public static string readBig5(string filePath)
+        {
+            byte[] asciiBytes = null;
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Open))
+            {
+                //讀BIG5編碼bytes
+                asciiBytes = new byte[fs.Length];
+                fs.Read(asciiBytes, 0, (int)fs.Length);
+            }
+
+            //將BIG5轉成utf8編碼的bytes
+            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("BIG5"), Encoding.UTF8, asciiBytes);
+
+            //將utf8 bytes轉成utf8字串
+            UTF8Encoding encUtf8 = new UTF8Encoding();
+
+            string utf8Str = encUtf8.GetString(utf8Bytes);
+
+            return utf8Str;
+        }
+
+        public static string readGB(string filePath)
+        {
+            byte[] asciiBytes = null;
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Open))
+            {
+                //讀GB2312編碼bytes
+                asciiBytes = new byte[fs.Length];
+                fs.Read(asciiBytes, 0, (int)fs.Length);
+            }
+
+            //將GB2312轉成utf8編碼的bytes
+            byte[] utf8Bytes = Encoding.Convert(Encoding.GetEncoding("GB2312"), Encoding.UTF8, asciiBytes);
+
+            //將utf8 bytes轉成utf8字串
+            UTF8Encoding encUtf8 = new UTF8Encoding();
+
+            string utf8Str = encUtf8.GetString(utf8Bytes);
+
+            return utf8Str;
         }
     }
 }
