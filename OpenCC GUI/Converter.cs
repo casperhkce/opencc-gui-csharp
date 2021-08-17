@@ -69,7 +69,7 @@
         /// </summary>
         /// <param name="configFileName">Location of configuration file. If this is set to NULL, OPENCC_DEFAULT_CONFIG_SIMP_TO_TRAD will be loaded.</param>
         /// <returns>A description pointer of the newly allocated instance of opencc. On error the return value will be (opencc_t) -1.</returns>
-        [DllImport("libopencc")]
+        [DllImport("opencc")]
         private static extern IntPtr opencc_open(string configFileName);
 
         /// <summary>
@@ -80,14 +80,14 @@
         /// <param name="input">The UTF-8 encoded string.</param>
         /// <param name="length">The maximum length in byte to convert. If length is (size_t)-1, the whole string (terminated by '\0') will be converted.</param>
         /// <returns>The newly allocated UTF-8 string that stores text converted, or NULL on error.</returns>
-        [DllImport("libopencc")]
+        [DllImport("opencc")]
         private static extern IntPtr opencc_convert_utf8(IntPtr opencc, byte[] input, UIntPtr length);
 
         /// <summary>
         /// Releases allocated buffer by opencc_convert_utf8.
         /// </summary>
         /// <param name="str">Pointer to the allocated string buffer by opencc_convert_utf8.</param>
-        [DllImport("libopencc")]
+        [DllImport("opencc")]
         private static extern void opencc_convert_utf8_free(IntPtr str);
 
         /// <summary>
@@ -95,7 +95,7 @@
         /// </summary>
         /// <param name="opencc">The description pointer.</param>
         /// <returns>0 on success or non-zero number on failure.</returns>
-        [DllImport("libopencc")]
+        [DllImport("opencc")]
         private static extern int opencc_close(IntPtr opencc);
 
         /// <summary>
@@ -103,7 +103,7 @@
         /// Note that this function is the only one which is NOT thread-safe.
         /// </summary>
         /// <returns>Error message</returns>
-        [DllImport("libopencc")]
+        [DllImport("opencc")]
         private static extern IntPtr opencc_error();
     }
 }
